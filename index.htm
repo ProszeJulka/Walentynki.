@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Puzzle – Miłych Walentynek</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #ffb6c1, #ff4d6d);
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    #game {
+      width: 300px;
+      height: 300px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 2px;
+      background: white;
+      padding: 5px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    .piece {
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 85 L15 45 A20 20 0 1 1 50 25 A20 20 0 1 1 85 45 Z' fill='%23ff1e56'/></svg>");
+      background-size: 300px 300px;
+      cursor: grab;
+      border-radius: 4px;
+    }
+
+    .piece:active {
+      cursor: grabbing;
+    }
+
+    #message {
+      margin-top: 25px;
+      font-size: 28px;
+      font-weight: bold;
+      color: white;
+      display: none;
+      animation: pop 0.6s ease-in-out;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 20px;
+      background: white;
+      color: #ff1e56;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #ffe3ea;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Ułóż serce ❤️</h1>
+
+  <div id="game"></div>
+
+  <div id="message">Słodkich Walentynek 💖</div>
+
+  <button onclick="shufflePieces()">Pomieszaj ponownie</button>
+
+  <script>
+    const game = document.getElementById("game");
+    const message = document.getElementById("message");
+
+    let dragged = null;
+
+    const size = 3;
+    const total = size * size;
+
+    function createPieces() {
+      game.innerHTML = "";
+
+      for (let i = 0; i < total; i++) {
+        const piece = document.createElement("div");
+        piece.classList.add("piece");
+
+        const x = (i % size) * -100;
+        const y = Math.floor(i / size) * -100;
+
+        piece.style.backgroundPosition = `${x}px ${y}px`;
+        piece.dataset.correct = i;
+
+        piece.draggable = true;
+
+        piece.addEventListener("dragstart", () => {
+          dragged = piece;
+        });
+
+        piece.addEventListener("dragover", e => {
+          e.preventDefault();
+        });
+
+        piece.addEventListener("drop", () => {
+          if (dragged && dragged !== piece) {
+            swapPieces(dragged, piece);
+            checkWin();
+          }
+        });
+
+        game.appendChild(piece);
+      }
+    }
+
+    function swapPieces(a, b) {
+      const tempPos = a.style.backgroundPosition;
+      const tempData = a.dataset.correct;
+
+      a.style.backgroundPosition = b.style.backgroundPosition;
+      a.dataset.correct = b.dataset.correct;
+
+      b.style.backgroundPosition = tempPos;
+      b.dataset.correct = tempData;
+    }
+
+    function shufflePieces() {
+      message.style.display = "none";
+
+      const pieces = [...document.querySelectorAll(".piece")];
+
+      for (let i = pieces.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        swapPieces(pieces[i], pieces[j]);
+      }
+    }
+
+    function checkWin() {
+      const pieces = document.querySelectorAll(".piece");
+
+      let correct = true;
+
+      pieces.forEach((piece, index) => {
+        if (Number(piece.dataset.correct) !== index) {
+          correct = false;
+        }
+      });
+
+      if (correct) {
+        message.style.display = "block";
+      }
+    }
+
+    createPieces();
+    shufflePieces();
+  </script>
+
+</body>
+</html>
